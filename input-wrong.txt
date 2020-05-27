@@ -1,0 +1,11 @@
+void f(){
+    integer = 0;
+}
+
+int integer;
+
+void main() {
+  double character;
+  read integer, i;    // * Error 3
+  f();                // * Error 4
+}

@@ -1,0 +1,5 @@
+char i;
+void main() {
+    i = 't';
+    write (char)i;
+}

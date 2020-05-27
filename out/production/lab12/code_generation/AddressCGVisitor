@@ -1,0 +1,20 @@
+address[[Variable: exp -> ID]=
+    if(exp.definition.scope==0)
+        <pusha > exp.definition.offset
+    else{
+        <push bp>
+        <pushi > exp.definition.offset
+        <addi>
+    }
+
+address[[FieldAccess: exp1 -> exp2 ID]]=
+    address[[exp2]]
+    <pushi > exp2.type.getField(ID).offset
+    <addi>
+
+address[[Indexing: exp1 -> exp2 exp3]]=
+    address[[exp2]]
+    value[[exp3]]
+    <pushi > exp1.type.numberOfBytes()
+    <muli>
+    <addi>

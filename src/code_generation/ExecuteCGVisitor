@@ -1,0 +1,92 @@
+execute[[Program: program -> def+]]=
+    def+.foreach(d -> {
+        if(d instanceof VarDefinition)
+            execute[[d]]
+    })
+    <' Invocation to the main function>
+    <call main>
+    <halt>
+    def+.foreach(d -> {
+        if(d instanceof FuncDefinition)
+            execute[[d]]
+    })
+
+execute[[Write: statement -> exp]]=
+    <' * Write>
+    value[[exp]]
+    <out> exp.type.suffix()
+
+execute[[Read: statement -> exp]]=
+    <' * Read>
+    address[[exp]]
+    <in> exp.type.suffix()
+    <store> exp.type.suffix()
+
+execute[[Assigment: statement -> exp1 exp2]]=
+    address[[exp1]]
+    value[[exp2]]
+    <store> exp1.type.suffix()
+
+execute[[VarDefinition: definition -> type ID]]=
+    <' * > type.reservedWord() ID <(offset> varDefinition.offset<)>
+
+execute[[FuncDefinition: definition -> type ID statements*]]=
+    <#line > definition.line
+    ID <:>
+    execute[[type]]
+    <'* Local variables>
+    statements*.foreach(s -> {
+        if(s instanceof varDefinition){
+            execute[[s]]
+        }
+    })
+    <enter > definition.getBytesLocals()
+
+    statements*.foreach(s -> {
+            if(!(s instanceof varDefinition)){
+                <#line > s.line
+                execute[[s]](definition.getBytesReturn(), definition.getBytesLocals(), definition.getBytesParams())
+            }
+        })
+    if(definition.getBytesReturn()==0)
+        <ret > definition.getBytesReturn() <, > definition.getBytesLocals() <, > definition.getBytesParams()
+
+execute[[FuncType: type1 -> type2 varDefinition*]]=
+    <' * Parameters:>
+    varDefinition*.foreach(vd -> execute[[vd]])
+
+execute[[While: statement1 -> exp statement2*]](int bytesReturn, int bytesLocals, int bytesParams)=
+    <' * While>
+    int labelNumber =cg.getLabels(2);
+    <label> labelNumber
+    value[[exp]]
+    <jz label> labelNumber+1
+    <' * Body while statement>
+    statement2*.foreach(s -> execute[[s]](bytesReturn, bytesLocals, bytesParams))
+    <jmp label> labelNumber
+    <label> labelNumber+1
+
+execute[[IfElse: statement1 -> exp statement2* statement3*]](int bytesReturn, int bytesLocals, int bytesParams)=
+    <' * If statement>
+    int labelNumber =cg.getLabels(2);
+    value[[exp]]
+    <jz label> labelNumber
+    <' * Body of the if branch>
+    statement2*.foreach(s -> execute[[s]](bytesReturn, bytesLocals, bytesParams))
+    <jmp label> labelNumber+1
+    <label> labelNumber
+    <' * Body of the else branch>
+    statement3*.foreach(s -> execute[[s]](bytesReturn, bytesLocals, bytesParams))
+    <label> labelNumber+1
+
+execute[[FuncInv: statement -> exp1 exp2*]]=
+    exp2*.foreach(exp -> value[[exp]])
+    <call > exp2.name
+    if(!(exp1.type.returnType instanceof VoidType))
+        <pop> exp1.type.returnType.suffix()
+
+execute[[Return: statement -> exp]](int bytesReturn, int bytesLocals, int bytesParams)=
+    value[[exp]]
+    <ret > bytesReturn <, > bytesLocals <, > bytesParams
+
+

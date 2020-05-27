@@ -1,0 +1,59 @@
+value[[IntLiteral: exp -> INT_CONSTANT]]=
+    <pushi > exp.value
+
+value[[RealLiteral: exp -> REAL_CONSTANT]]=
+    <pushf > exp.value
+
+value[[CharacterLiteral: exp -> CHAR_CONSTANT]]=
+    <pushb > Character.getNumericValue(exp.value)
+
+value[[Variable: exp -> ID]]=
+    address[[exp]]
+    <load> exp.type.suffix()
+
+value[[Arithmetic: exp1 -> exp2 (+|-|*|/|%) exp3]]=
+         if(exp2.type instanceof CharType){
+            value[[exp2]]
+            <b2i>
+            value[[exp3]]
+            <b2i>
+         } else{
+            value[[exp2]]
+            value[[exp3]]
+         }
+         switch(exp1.operator){
+             case "+": <add> exp1.type.suffix() break;
+             case "-": <sub> exp1.type.suffix() break;
+             case "/": <div> exp1.type.suffix() break;
+             case "*": <mul> exp1.type.suffix() break;
+             case "%": <mod> exp1.type.suffix() break;
+         }
+
+value[[LogicalComparator: exp1 -> exp2 (>|>=|<|<=|!=|==) exp3]]=
+         value[[exp2]]
+         value[[exp3]]
+         switch(exp1.operator){
+             case ">": <gt> exp1.type.suffix() break;
+             case "<": <lt> exp1.type.suffix() break;
+             case ">=": <ge> exp1.type.suffix() break;
+             case "<=": <le> exp1.type.suffix() break;
+             case "==": <eq> exp1.type.suffix() break;
+             case "!=": <ne> exp1.type.suffix() break;
+         }
+
+value[[LogicalDoor: exp1 -> exp2 (&&| ||) exp3]]=
+    value[[exp2]]
+    value[[exp3]]
+    switch(exp1.operator){
+        case "&&": <and> break;
+        case "||": <or> break;
+    }
+
+value[[UnaryNegation: exp1 -> exp2]]=
+    value[[exp2]]
+    <not>
+
+value[[CastType: exp1 -> type exp2]]=
+    value[[exp2]]
+    exp2.type.convertTo(type)
+

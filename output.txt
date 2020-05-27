@@ -1,0 +1,21 @@
+#source "input.txt"
+	' * char i (offset 0)
+' Invocation to the main function
+call main
+halt
+#line	2
+main:
+	' * Parameters
+	' * Local variables
+	enter	0
+#line	3
+	pusha	0
+	pushb	116
+	storeb
+#line	4
+	' * Write
+	pusha	0
+	loadb
+	
+	outb
+	ret	0, 0, 0

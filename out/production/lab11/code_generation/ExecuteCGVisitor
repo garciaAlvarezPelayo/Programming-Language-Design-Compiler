@@ -1,0 +1,51 @@
+execute[[Program: program -> def+]]=
+    def+.foreach(d => {
+        if(d instanceof VarDefinition)
+            execute[[d]]
+    })
+    <' Invocation to the main function>
+    <call main>
+    <halt>
+    def+.foreach(d => {
+        if(d instanceof FuncDefinition)
+            execute[[d]]
+    })
+
+execute[[Write: statement -> exp]]=
+    <' * Write>
+    address[[exp]]
+    <out> exp.type.suffix()
+
+execute[[Read: statement -> exp]]=
+    <' * Read>
+    address[[exp]]
+    <in> exp.type.suffix()
+    <store> exp.type.suffix()
+
+execute[[Assigment: statement -> exp1 exp2]]=
+    address[[exp1]]
+    value[[exp2]]
+    <store> exp1.type.suffix()
+
+execute[[VarDefinition: definition -> type ID]]=
+    <' * > type ID <(offset> varDefinition.offset<)>
+
+execute[[FuncDefinition: definition -> type ID statements*]]=
+    ID <:>
+    execute[[type]]
+    <'* Local variables>
+    int last = 0;
+    boolean c = true;
+    statements*.foreach(s => {
+        if(s instanceof varDefinition){
+
+        }
+    })
+
+
+execute[[FuncType: type1 -> type2 varDefinition*]]=
+    <' * Parameters:>
+    varDefinition*.foreach(vd -> execute[[vd]])
+
+
+
